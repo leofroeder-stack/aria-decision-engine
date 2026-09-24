@@ -138,3 +138,66 @@ At Groq's pricing for `openai/gpt-oss-20b`, a typical decision (~200–800 token
 ## License
 
 MIT — do whatever you want with it.
+
+---
+
+## 🤖 Integrating with AI agents (Claude, ChatGPT, Gemini, Hermes, Cursor...)
+
+There are 3 ways to plug this into an AI agent's workflow, depending on the platform.
+
+### Option A — MCP (Claude Desktop, Claude Code, Cursor, Hermes, OpenClaw, any MCP client)
+
+This repo ships a native **MCP server** (`mcp-server.js`) that exposes a `decide` tool. Any agent that speaks the Model Context Protocol can call it directly — no HTTP hosting needed, it runs as a local subprocess.
+
+**Claude Desktop** — add to your `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "aria-decision-engine": {
+      "command": "npx",
+      "args": ["--yes", "git+https://github.com/leofroeder-stack/aria-decision-engine.git", "aria-decision-engine-mcp"],
+      "env": { "GROQ_API_KEY": "gsk_your_key_here" }
+    }
+  }
+}
+```
+Restart Claude Desktop — it will now see a `decide` tool it can call for any classification task.
+
+**Cursor / Hermes / OpenClaw / any MCP-compatible agent** — same idea, add an MCP server entry pointing to `aria-decision-engine-mcp` with `GROQ_API_KEY` in its env. Check your agent's docs for where its MCP config file lives (Cursor: Settings → MCP; Hermes: its `config.yaml` under `mcpServers`).
+
+### Option B — Agentic coding tools with shell access (Claude Code, Hermes `--yolo`, OpenClaw, any agent that can run terminal commands)
+
+You don't even need MCP for these — just tell the agent (in its system prompt or instructions file) that it has this tool available via shell:
+```bash
+export GROQ_API_KEY=gsk_your_key
+npx --yes git+https://github.com/leofroeder-stack/aria-decision-engine.git --input "<text>" --schema "<json schema description>"
+```
+The agent runs it as a normal shell command and reads the JSON from stdout. This works today with zero extra setup.
+
+### Option C — ChatGPT / Gemini API function-calling (when building your own app)
+
+If you're building your own app on the OpenAI or Gemini API (not the chat UIs), define this as a function/tool in your own backend and call `decide()` inside the handler:
+
+```json
+{
+  "name": "decide",
+  "description": "Fast structured decision engine for classification tasks (urgency, category, spam, severity, etc.)",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "input": { "type": "string", "description": "Text/context to classify" },
+      "schema_description": { "type": "string", "description": "Plain-language description of expected JSON schema" }
+    },
+    "required": ["input", "schema_description"]
+  }
+}
+```
+
+```js
+import { decide } from 'aria-decision-engine';
+
+// inside your function-calling handler, when the model calls "decide":
+const result = await decide({ input: args.input, schemaDescription: args.schema_description, apiKey: process.env.GROQ_API_KEY });
+```
+
+ChatGPT.com and the Gemini consumer app don't support arbitrary third-party tools without a custom GPT/Extension — Option C is for developers calling the raw APIs, not the consumer chat apps.

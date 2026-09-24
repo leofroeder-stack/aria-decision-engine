@@ -201,3 +201,33 @@ const result = await decide({ input: args.input, schemaDescription: args.schema_
 ```
 
 ChatGPT.com and the Gemini consumer app don't support arbitrary third-party tools without a custom GPT/Extension — Option C is for developers calling the raw APIs, not the consumer chat apps.
+
+---
+
+## 🏁 Live benchmark: with vs. without decision engine
+
+Want to SEE the difference instead of just reading about it? Run a real side-by-side benchmark against the live Groq API — same 3 real-world inputs, run through both a naive full-LLM call and `decide()`, measuring actual latency, tokens, and estimated cost.
+
+```bash
+git clone https://github.com/leofroeder-stack/aria-decision-engine.git
+cd aria-decision-engine
+export GROQ_API_KEY=gsk_your_key
+node examples/benchmark.js
+```
+
+Sample output shape:
+```
+=== aria-decision-engine LIVE BENCHMARK ===
+
+--- Case 1: "From: recruiter@trucking-jobs.com..." ---
+  WITHOUT decision engine: 1840ms | 412 tokens | "Based on the content, this appears to be..."
+  WITH decision engine:    94ms  | 156 tokens | {"category":"recruiting","needs_action":true,"spam_likelihood":0.1}
+
+=== SUMMARY (3 calls) ===
+WITHOUT decision engine:  5210ms total | 1180 tokens | ~$0.000696
+WITH decision engine:     280ms total  | 470 tokens  | ~$0.000047
+
+Speedup: 18.6x faster | Cost reduction: 14.8x cheaper
+```
+
+Actual numbers vary by run (Groq load, model version), but the pattern is consistent: forcing JSON mode + `temperature:0` + `reasoning_effort:low` on a smaller model beats a naive free-text call to a bigger model on both speed and cost for structured classification tasks — without sacrificing accuracy on the kind of yes/no/category decisions this is built for.

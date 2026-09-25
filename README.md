@@ -231,3 +231,42 @@ Speedup: 18.6x faster | Cost reduction: 14.8x cheaper
 ```
 
 Actual numbers vary by run (Groq load, model version), but the pattern is consistent: forcing JSON mode + `temperature:0` + `reasoning_effort:low` on a smaller model beats a naive free-text call to a bigger model on both speed and cost for structured classification tasks — without sacrificing accuracy on the kind of yes/no/category decisions this is built for.
+
+---
+
+## 🎮 Interactive playground
+
+Don't want to write any code or flags? Run the playground — a menu-driven interactive session with 5 real preset scenarios (email triage, fleet fault severity, support ticket urgency, billing/churn risk, spam filter) plus a "type your own" option. It even prompts you for your API key if you haven't set one.
+
+```bash
+# One-liner (no clone needed):
+npx --yes git+https://github.com/leofroeder-stack/aria-decision-engine.git aria-decision-engine-playground
+
+# Or after cloning:
+export GROQ_API_KEY=gsk_your_key
+node examples/playground.js
+```
+
+```
+=== aria-decision-engine PLAYGROUND ===
+Try real classification scenarios live against the Groq API.
+
+Choose a scenario:
+  1) Email triage
+  2) Fleet fault / DTC severity
+  3) Support ticket urgency
+  4) Billing / churn risk
+  5) Spam filter
+  6) Custom — type your own input + schema
+  0) Exit
+
+> 2
+
+Input: SPN 190 FMI 0 - Engine Speed High - Most Severe fault level detected
+Schema: {severity: 'critical'|'warning'|'informational', requires_shutdown: bool}
+Calling Groq...
+Decision: { "severity": "critical", "requires_shutdown": true }
+(94ms, 156 tokens, model: openai/gpt-oss-20b)
+```
+
+Pick another scenario or exit with `0`. Great for demoing the tool to someone in 30 seconds without writing a single line of code.

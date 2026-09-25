@@ -1,16 +1,17 @@
 {
   "name": "aria-decision-engine",
-  "version": "1.1.0",
-  "description": "Fast structured decision engine via Groq (JSON mode, ~85ms, ~$0.00004/decision). Binary/categorical/score decisions at high volume, with native MCP support for Claude, Cursor, Hermes and other AI agents.",
+  "version": "1.2.0",
+  "description": "Fast structured decision engine via Groq (JSON mode, ~85ms, ~$0.00004/decision). Binary/categorical/score decisions at high volume, with native MCP support and an interactive playground.",
   "type": "module",
   "bin": {
     "aria-decision-engine": "./index.js",
-    "aria-decision-engine-mcp": "./mcp-server.js"
+    "aria-decision-engine-mcp": "./mcp-server.js",
+    "aria-decision-engine-playground": "./examples/playground.js"
   },
   "main": "index.js",
   "license": "MIT",
   "author": "leofroeder-stack",
-  "keywords": ["groq", "decision-engine", "classification", "llm", "json-mode", "structured-output", "triage", "mcp", "model-context-protocol", "ai-agent-tool"],
+  "keywords": ["groq", "decision-engine", "classification", "llm", "json-mode", "structured-output", "triage", "mcp", "model-context-protocol", "ai-agent-tool", "playground"],
   "engines": { "node": ">=18" },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
